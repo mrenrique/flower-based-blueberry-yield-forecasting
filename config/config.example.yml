@@ -1,0 +1,125 @@
+# ============================================================
+# CONFIGURACIÓN DEL PIPELINE DE PROYECCIÓN DE KILOS CON FLORES
+# ============================================================
+# Copiar este archivo como config/config.yml y ajustar los valores.
+# config/config.yml está en .gitignore: nunca se versiona.
+
+# ============================================================
+# 1. FUENTE DE DATOS
+# ============================================================
+# "demo"      -> lee insumos sintéticos de data/demo (no requiere SQL Server)
+# "sqlserver" -> lee de SQL Server usando las credenciales de .env
+fuente: demo
+
+# ============================================================
+# 2. ALCANCE DE LA PROYECCIÓN
+# ============================================================
+campania: 2026
+
+# SubParcelas a proyectar.
+# Códigos genéricos: en una instalación real se reemplazan por los propios
+# en config/config.yml, que no se versiona.
+subparcelas:
+  - SP01
+  - SP02
+  - SP03
+  - SP04
+  - SP05
+  - SP06
+  - SP07
+  - SP08
+  - SP09
+  - SP10
+  - SP11
+  - SP12
+  - SP13
+  - SP14
+  - SP15
+  - SP16
+  - SP17
+  - SP18
+
+# Semana base de la proyección. La proyección arranca en la semana SIGUIENTE.
+# Dejar ambos en null para usar la fecha del sistema.
+anio_base: 2026
+semana_base: 35
+
+# ============================================================
+# 3. IDENTIFICADORES DE LA FUENTE SQL
+# ============================================================
+# Solo se usan cuando fuente = "sqlserver".
+sql:
+  id_evaluacion: 54        # evaluación de "Flores Nuevas" en la base de datos
+  id_cultivo: 9            # arándano
+
+  # Nombres de las tablas del esquema. Están en configuración y no en el
+  # código para no publicar el esquema interno: estos son nombres genéricos.
+  # En una instalación real se reemplazan por los del esquema propio en
+  # config/config.yml, que no se versiona.
+  tablas:
+    evaluacion_flores: flower_evaluation
+    lote: lot
+    subparcela: subplot
+    parcela: plot
+    fundo: farm
+    variedad: variety
+    cultivo: crop
+    area_cultivable: cultivable_area
+  # Driver ODBC preferido. Si es null, se busca el primero que contenga
+  # "SQL Server" entre los drivers instalados.
+  driver_odbc: null
+  # Cifrado de la conexión. Mantener en true salvo que el servidor no lo soporte.
+  encrypt: true
+  confiar_certificado: true
+  timeout: 30
+
+# ============================================================
+# 4. REGLAS DE NEGOCIO Y UMBRALES DE VALIDACIÓN
+# ============================================================
+reglas:
+  # Rango admisible del peso de baya en gramos. Fuera de rango detiene el proceso
+  # (normalmente indica un error de unidad en el insumo de Calidad).
+  peso_min_g: 0.5
+  peso_max_g: 8.0
+
+  # Días de separación a partir de los cuales dos registros de cosecha SAP
+  # se consideran pasadas distintas. Ojo: con 2, cosecha en sábado y luego
+  # lunes cuenta como dos pasadas.
+  dias_nueva_pasada: 2
+
+  # Tolerancia numérica para validar que cada curva de maduración sume 1.
+  tolerancia_curva: 1.0e-8
+
+  # Flores distribuidas que quedan fuera del horizonte del programa de cosecha.
+  # Es estructuralmente esperable: las evaluaciones más recientes maduran más
+  # allá de las 9 semanas del programa. En operación normal ronda 15-25 %.
+  # - aviso:  por encima de este valor se imprime una advertencia
+  # - maximo: por encima de este valor se detiene el proceso (calendario roto,
+  #           programa vacío o arranque mal configurado)
+  aviso_pct_flores_no_asignadas: 0.30
+  maximo_pct_flores_no_asignadas: 0.60
+
+# ============================================================
+# 5. RUTAS
+# ============================================================
+# Rutas relativas a la raíz del repositorio, o absolutas.
+# En modo "sqlserver" apuntar a las carpetas reales de insumos.
+rutas:
+  insumos: data/demo/insumos
+  fuente_demo: data/demo/sql
+  salida: output
+  # Carpeta alternativa donde buscar un insumo que todavía no fue movido a la
+  # ruta oficial (típicamente la carpeta de descargas). null la desactiva.
+  fallback_insumos: null
+
+# ============================================================
+# 6. NOMBRES DE ARCHIVOS DE INSUMO
+# ============================================================
+# {periodo_actual}     = AAAASS de la semana base
+# {periodo_proyeccion} = AAAASS de la semana base + 1
+archivos:
+  pesos_ejecutados: Calidad_Data_Peso_Variedad.xlsx
+  pesos_proyectados: pesos_proyectados_{periodo_proyeccion}.xlsx
+  parametros_mad_viab: parametros_maduracion_viabilidad_{periodo_proyeccion}.xlsx
+  kilos_sap: kilos_ejecutados_sap.xlsx
+  programa_cosecha: programa_cosecha_arandano_{periodo_actual}.xlsx

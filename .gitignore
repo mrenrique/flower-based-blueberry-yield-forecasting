@@ -1,0 +1,46 @@
+# ============================================================
+# Secretos y configuración local
+# ============================================================
+.env
+.Renviron
+config/config.yml
+!config/config.example.yml
+!config/.env.example
+
+# ============================================================
+# Datos: NADA de data productiva entra al repositorio.
+# Los insumos demo se regeneran con R/make_demo_data.R
+# ============================================================
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.rds
+*.parquet
+data/
+output/
+log/
+
+# ============================================================
+# R
+# ============================================================
+.Rhistory
+.Rapp.history
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+renv/library/
+renv/staging/
+renv/local/
+.httr-oauth
+
+# ============================================================
+# Sistema operativo y editores
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*~

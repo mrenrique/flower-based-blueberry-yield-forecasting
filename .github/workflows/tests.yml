@@ -1,0 +1,51 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      # Los archivos del proyecto están en UTF-8: R debe correr en un locale
+      # UTF-8 o source() trunca la lectura en el primer carácter acentuado.
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.3.3"
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::dplyr
+            any::tidyr
+            any::purrr
+            any::stringr
+            any::lubridate
+            any::glue
+            any::readxl
+            any::writexl
+            any::tibble
+            any::yaml
+            any::testthat
+
+      - name: Tests unitarios
+        run: Rscript tests/test_funciones.R
+
+      - name: Pipeline completo en modo demo
+        run: Rscript main.R
+
+      - name: Verificar que se generaron los exportables
+        run: |
+          ls -la output/
+          test "$(ls output/*.xlsx | wc -l)" -eq 2
